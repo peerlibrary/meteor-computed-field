@@ -33,7 +33,7 @@ class ComputedField
 
     # If this autorun is nested in the outside autorun it gets stopped automatically when the outside autorun gets
     # invalidated, so no need to call destroy. But otherwise you should call destroy when the field is not needed anymore.
-    getter.destroy = ->
+    getter.stop = ->
       handle?.stop()
       handle = null
 
