@@ -18,10 +18,10 @@ var foobar = new ComputedField(function () {
 console.log(foobar());
 ```
 
-You get current value by calling the field as a function. This is useful when you are assigning them to objects
-because they behave like object methods. You can also access them in
-[Blaze Components](https://github.com/peerlibrary/meteor-blaze-components) template by simply doing `{{foobar}}`
-when they are assigned to the component.
+You get current value by calling the field as a function. A reactive dependency is then registered.
+This is useful when you are assigning them to objects because they behave like object methods. You can also access
+them in [Blaze Components](https://github.com/peerlibrary/meteor-blaze-components) template by simply doing
+`{{foobar}}` when they are assigned to the component.
 
 Optionally, you can pass custom equality function:
 
