@@ -98,5 +98,6 @@ Related projects
 
 * [meteor-isolate-value](https://github.com/awwx/meteor-isolate-value) – an obsolete package with alternative way of
 minimizing reactivity propagation
-
-* [meteor-embox-value](https://github.com/3stack-software/meteor-embox-value) - Allows you to cache values of heavy computations, allowing multiple reactive reads without depending on all the original reactive values
+* [meteor-embox-value](https://github.com/3stack-software/meteor-embox-value) - more or less the same as computed field,
+just different implementation; computed field allows you to use `instanceof ComputedField` to determine if a field
+is a computed field; embox-value package has special provisioning for better integration with Blaze templates
