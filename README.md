@@ -46,3 +46,5 @@ Related projects
 
 * [meteor-isolate-value](https://github.com/awwx/meteor-isolate-value) – an obsolete package with alternative way of
 minimizing reactivity propagation
+
+* [meteor-embox-value](https://github.com/3stack-software/meteor-embox-value) - Allows you to cache values of heavy computations, allowing multiple reactive reads without depending on all the original reactive values
