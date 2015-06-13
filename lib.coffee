@@ -14,6 +14,8 @@ class ComputedField
         lastValue.set value
 
     getter = ->
+      # We always flush so that you get the most recent value. This is a noop if autorun was not invalidated.
+      getter.flush()
       lastValue.get()
 
     # We mingle the prototype so that getter instanceof ComputedField is true.
@@ -38,8 +40,10 @@ class ComputedField
       handle = null
 
     # Sometimes you want to force recomputation of the new value before the global Tracker flush is done.
-    # TODO: Use something more official. See https://github.com/meteor/meteor/issues/4514
+    # This is a noop if autorun was not invalidated.
     getter.flush = ->
-      handle?._recompute()
+      Tracker.nonreactive ->
+        # TODO: Use something more official. See https://github.com/meteor/meteor/issues/4514
+        handle?._recompute()
 
     return getter
