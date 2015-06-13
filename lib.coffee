@@ -5,13 +5,21 @@ class ComputedField
     # This autorun does not keep the Blaze template instance context. So func should not access things like
     # Template.instance() because it will be null.
     # TODO: Fix this. See: https://github.com/meteor/meteor/issues/4494
-    handle = Tracker.autorun (computation) ->
-      value = func()
+    getHandle = ->
+      Tracker.autorun (computation) ->
+        value = func()
 
-      if computation.firstRun
-        lastValue = new ReactiveVar value, equalsFunc
-      else
-        lastValue.set value
+        if computation.firstRun
+          lastValue = new ReactiveVar value, equalsFunc
+        else
+          lastValue.set value
+
+        Tracker.afterFlush ->
+          # If there are no dependents anymore, stop the autorun. We will run
+          # it again in the getter's flush call if needed.
+          getter.stop() unless lastValue.dep.hasDependents()
+
+    handle = getHandle()
 
     getter = ->
       # We always flush so that you get the most recent value. This is a noop if autorun was not invalidated.
@@ -39,11 +47,20 @@ class ComputedField
       handle?.stop()
       handle = null
 
+    # For tests.
+    getter._isRunning = ->
+      !!handle
+
     # Sometimes you want to force recomputation of the new value before the global Tracker flush is done.
     # This is a noop if autorun was not invalidated.
     getter.flush = ->
       Tracker.nonreactive ->
-        # TODO: Use something more official. See https://github.com/meteor/meteor/issues/4514
-        handle?._recompute()
+        if handle
+          # TODO: Use something more official. See https://github.com/meteor/meteor/issues/4514
+          handle._recompute()
+        else
+          # If there is no autorun, create it now. This will do initial recomputation as well. If there
+          # will be no dependents after the global flush, autorun will stop (again).
+          handle = getHandle()
 
     return getter

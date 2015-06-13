@@ -30,6 +30,49 @@ class TemplateTestCase extends ClassyTestCase
       @assertEqual $('.computedFieldTestTemplate').text(), '43'
 
       Blaze.remove @rendered
+
+      # Even after all dependencies are removed, autorun is still active.
+      @assertTrue @foo._isRunning()
+
+      # But after the value changes again and the computation reruns, a new check is made after the global flush.
+      @internal.set 44
+      @assertEqual @foo(), 44
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      # And now the computed field should not be running anymore.
+      @assertFalse @foo._isRunning()
+
+      @internal.set 45
+      @assertFalse Tracker.active
+      @assertEqual @foo(), 45
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      # Value was updated, but because getter was not called in the reactive context, autorun was stopped again.
+      @assertFalse @foo._isRunning()
+
+      # But now if we render the template again and register a dependency again.
+      @rendered = Blaze.renderWithData Template.computedFieldTestTemplate, {foo: @foo}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual $('.computedFieldTestTemplate').text(), '45'
+
+      # Autorun is running again.
+      @assertTrue @foo._isRunning()
+
+      Blaze.remove @rendered
+
+      # Still running. There was no value change and no global flush yet.
+      @assertTrue @foo._isRunning()
+
+      # We can also stop autorun manually.
+      @foo.stop()
+      @assertFalse @foo._isRunning()
   ]
 
 ClassyTestCase.addTest new TemplateTestCase()

@@ -44,7 +44,7 @@ meteor add peerlibrary:computed-field
 Extra field methods
 -------------------
 
-The computed field is a function, but it has also two extra methods.
+The computed field is a function, but it has also two extra methods which you probably do not really need.
 
 ```javascript
 field.stop()
@@ -70,10 +70,15 @@ mouse moves over the rectangle's border. On the other hand, `expensiveComputatio
 operation which draws a rectangle differently if the mouse position is inside or outside of the rectangle. You do
 not want to redraw on every mouse position change.
 
-But if you create a computed field outside an autorun, then you have to make sure you stop the field when you
-do not need it anymore. For example, if you create inside
-[Blaze Components](https://github.com/peerlibrary/meteor-blaze-components) `onCreated` hook, you should clean-up
-inside the `onDestroyed` hook. You can use the following pattern, in CoffeeScript:
+Even if you create a computed field outside an autorun, autorun will be automatically stopped when there will
+be no reactive dependencies anymore on the computed field.
+
+Still, a `field.stop()` method is provided for you if you want to explicitly stop and clean the field. Remember,
+registering a dependency afterwards will start internal autorun again.
+
+For example, if you want to manually stop computed fields in
+[Blaze Components](https://github.com/peerlibrary/meteor-blaze-components), you could create them in the `onCreated`
+hook and clean-up them inside the `onDestroyed` hook. You can use the following pattern, in CoffeeScript:
 
 ```coffee
 onCreated: ->
@@ -91,7 +96,10 @@ field.flush()
 ```
 
 Sometimes you do not want to wait for global flush to happen to recompute the value. You can call `flush()` on the
-field to force immediate recomputation. Recomputation happens only if it is needed.
+field to force immediate recomputation. But the same happens when you access the field value. If the value is
+invalidated, it will be automatically first recomputed and then returned. `flush()` is in this case called for you
+before returning you the field value. In both cases, calling `flush()` directly or accessing the field value,
+recomputation happens only if it is needed.
 
 Related projects
 ----------------
