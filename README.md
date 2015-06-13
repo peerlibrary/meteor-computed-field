@@ -59,6 +59,7 @@ Tracker.autorun(function () {
   var result = new ComputedField(frequentlyInvalidatedButCheap);
   expensiveComputation(result());
 });
+```
 
 In this example `frequentlyInvalidatedButCheap` is a function which depends on reactive variables which frequently
 change, but computing with them is cheap, and resulting value **rarely changes**. On the other hand,
