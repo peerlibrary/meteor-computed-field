@@ -44,7 +44,8 @@ meteor add peerlibrary:computed-field
 Extra field methods
 -------------------
 
-The computed field is a function, but it has also two extra methods which you probably do not really need.
+The computed field is a function, but it has also two extra methods which you probably do not really need, because
+computed field should do the right thing automatically.
 
 ```javascript
 field.stop()
