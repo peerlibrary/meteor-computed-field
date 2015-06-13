@@ -73,7 +73,7 @@ not want to redraw on every mouse position change.
 Even if you create a computed field outside an autorun, autorun will be automatically stopped when there will
 be no reactive dependencies anymore on the computed field.
 
-Still, a `field.stop()` method is provided for you if you want to explicitly stop and clean the field. Remember,
+Still, the `stop()` method is provided for you if you want to explicitly stop and clean the field. Remember,
 registering a dependency afterwards will start internal autorun again.
 
 For example, if you want to manually stop computed fields in
