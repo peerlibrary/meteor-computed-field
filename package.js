@@ -1,7 +1,7 @@
 Package.describe({
   name: 'peerlibrary:computed-field',
   summary: "Reactively computed field for Meteor",
-  version: '0.2.0',
+  version: '0.3.0',
   git: 'https://github.com/peerlibrary/meteor-computed-field.git'
 });
 
