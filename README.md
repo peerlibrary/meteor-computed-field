@@ -72,10 +72,17 @@ operation which draws a rectangle differently if the mouse position is inside or
 not want to redraw on every mouse position change.
 
 Even if you create a computed field outside an autorun, autorun will be automatically stopped when there will
-be no reactive dependencies anymore on the computed field.
+be no reactive dependencies anymore on the computed field. So the previous example could be written as well as:
+
+```javascript
+var result = new ComputedField(frequentlyInvalidatedButCheap);
+Tracker.autorun(function () {
+  expensiveComputation(result());
+});
+```
 
 Still, the `stop()` method is provided for you if you want to explicitly stop and clean the field. Remember,
-registering a dependency afterwards will start internal autorun again.
+getting a value again afterwards will start internal autorun again.
 
 For example, if you want to manually stop computed fields in
 [Blaze Components](https://github.com/peerlibrary/meteor-blaze-components), you could create them in the `onCreated`
