@@ -1,12 +1,13 @@
 class ComputedField
   constructor: (func, equalsFunc) ->
+    handle = null
     lastValue = null
 
     # This autorun does not keep the Blaze template instance context. So func should not access things like
     # Template.instance() because it will be null.
     # TODO: Fix this. See: https://github.com/meteor/meteor/issues/4494
-    getHandle = ->
-      Tracker.autorun (computation) ->
+    startAutorun = ->
+      handle = Tracker.autorun (computation) ->
         value = func()
 
         unless lastValue
@@ -19,7 +20,21 @@ class ComputedField
           # it again in the getter's flush call if needed.
           getter.stop() unless lastValue.dep.hasDependents()
 
-    handle = getHandle()
+      # If something stops our autorun from the outside, we want to know that and update internal state accordingly.
+      # This means that if computed field was created inside an autorun, and that autorun is invalided our autorun is
+      # stopped. But then computed field might be still around and it might be asked again for the value. We want to
+      # restart our autorun in that case. Instead of trying to recompute the stopped autorun.
+      if handle.onStop
+        handle.onStop ->
+          handle = null
+      else
+        # XXX COMPAT WITH METEOR 1.1.0
+        originalStop = handle.stop
+        handle.stop = ->
+          originalStop.call handle
+          handle = null
+
+    startAutorun()
 
     getter = ->
       # We always flush so that you get the most recent value. This is a noop if autorun was not invalidated.
@@ -61,6 +76,6 @@ class ComputedField
         else
           # If there is no autorun, create it now. This will do initial recomputation as well. If there
           # will be no dependents after the global flush, autorun will stop (again).
-          handle = getHandle()
+          startAutorun()
 
     return getter

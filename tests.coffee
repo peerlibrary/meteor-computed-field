@@ -46,4 +46,37 @@ class BasicTestCase extends ClassyTestCase
 
     handle.stop()
 
+  testNested: ->
+    internal = new ReactiveVar 42
+    outside = null
+
+    changes = []
+    handle = Tracker.autorun (computation) =>
+      outside = new ComputedField ->
+        internal.get()
+      changes.push outside()
+
+    internal.set 43
+
+    Tracker.flush()
+
+    handle.stop()
+
+    Tracker.flush()
+
+    internal.set 44
+
+    Tracker.flush()
+
+    internal.set 45
+
+    # Force reading of the value.
+    @assertEqual outside(), 45
+
+    Tracker.flush()
+
+    @assertEqual changes, [42, 43]
+
+    outside.stop()
+
 ClassyTestCase.addTest new BasicTestCase()
