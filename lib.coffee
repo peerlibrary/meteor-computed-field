@@ -9,7 +9,7 @@ class ComputedField
       Tracker.autorun (computation) ->
         value = func()
 
-        if computation.firstRun
+        unless lastValue
           lastValue = new ReactiveVar value, equalsFunc
         else
           lastValue.set value
