@@ -30,7 +30,9 @@ Package.onTest(function (api) {
     'reactive-var',
     'templating',
     'blaze',
-    'spacebars'
+    'spacebars',
+    'underscore',
+    'jquery'
   ]);
 
   // Internal dependencies.
