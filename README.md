@@ -99,6 +99,8 @@ onDestroyed: ->
 }
 ```
 
+But you do not have to! They will be stopped automatically anyway.
+
 ```javascript
 field.flush()
 ```
