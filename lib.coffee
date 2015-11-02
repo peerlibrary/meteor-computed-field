@@ -31,7 +31,7 @@ class ComputedField
         # XXX COMPAT WITH METEOR 1.1.0
         originalStop = handle.stop
         handle.stop = ->
-          originalStop.call handle
+          originalStop.call handle if handle
           handle = null
 
     startAutorun()
