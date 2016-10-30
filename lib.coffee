@@ -1,5 +1,5 @@
 class ComputedField
-  constructor: (func, equalsFunc) ->
+  constructor: (func, equalsFunc, dontStop) ->
     handle = null
     lastValue = null
 
@@ -15,10 +15,11 @@ class ComputedField
         else
           lastValue.set value
 
-        Tracker.afterFlush ->
-          # If there are no dependents anymore, stop the autorun. We will run
-          # it again in the getter's flush call if needed.
-          getter.stop() unless lastValue.dep.hasDependents()
+        unless dontStop
+          Tracker.afterFlush ->
+            # If there are no dependents anymore, stop the autorun. We will run
+            # it again in the getter's flush call if needed.
+            getter.stop() unless lastValue.dep.hasDependents()
 
       # If something stops our autorun from the outside, we want to know that and update internal state accordingly.
       # This means that if computed field was created inside an autorun, and that autorun is invalided our autorun is

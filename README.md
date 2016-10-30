@@ -101,6 +101,11 @@ onDestroyed: ->
 
 But you do not have to! They will be stopped automatically anyway.
 
+If you want to prevent automatically stopping the computed field, maybe
+because you are not accessing its value inside an autorun, you can pass
+a `true` value as a third argument to its constructor. But be sure to cleanup
+the field once you do not need it anymore.
+
 ```javascript
 field.flush()
 ```
