@@ -79,4 +79,49 @@ class BasicTestCase extends ClassyTestCase
 
     outside.stop()
 
+  testDontStop: ->
+    internal = new ReactiveVar 42
+
+    run = []
+    foo = new ComputedField ->
+      value = internal.get()
+      run.push value
+      value
+
+    foo()
+
+    Tracker.flush()
+
+    foo()
+
+    Tracker.flush()
+
+    foo()
+
+    @assertEqual run, [42, 42, 42]
+
+    foo.stop()
+
+    run = []
+    foo = new ComputedField ->
+      value = internal.get()
+      run.push value
+      value
+    ,
+      true
+
+    foo()
+
+    Tracker.flush()
+
+    foo()
+
+    Tracker.flush()
+
+    foo()
+
+    @assertEqual run, [42]
+
+    foo.stop()
+
 ClassyTestCase.addTest new BasicTestCase()
