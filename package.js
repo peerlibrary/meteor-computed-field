@@ -1,7 +1,7 @@
 Package.describe({
   name: 'peerlibrary:computed-field',
   summary: "Reactively computed field for Meteor",
-  version: '0.3.1',
+  version: '0.4.0',
   git: 'https://github.com/peerlibrary/meteor-computed-field.git'
 });
 
@@ -12,7 +12,8 @@ Package.onUse(function (api) {
   api.use([
     'coffeescript',
     'tracker',
-    'reactive-var'
+    'reactive-var',
+    'underscore'
   ]);
 
   api.export('ComputedField');
