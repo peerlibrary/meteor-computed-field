@@ -1,5 +1,10 @@
 class ComputedField
   constructor: (func, equalsFunc, dontStop) ->
+    # To support passing boolean as the second argument.
+    if _.isBoolean equalsFunc
+      dontStop = equalsFunc
+      equalsFunc = null
+
     handle = null
     lastValue = null
 
