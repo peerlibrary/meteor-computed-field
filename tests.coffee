@@ -90,13 +90,23 @@ class BasicTestCase extends ClassyTestCase
 
     foo()
 
-    Tracker.flush()
-
-    foo()
+    @assertTrue foo._isRunning()
 
     Tracker.flush()
 
+    @assertFalse foo._isRunning()
+
     foo()
+
+    @assertTrue foo._isRunning()
+
+    Tracker.flush()
+
+    @assertFalse foo._isRunning()
+
+    foo()
+
+    @assertTrue foo._isRunning()
 
     @assertEqual run, [42, 42, 42]
 
@@ -112,13 +122,23 @@ class BasicTestCase extends ClassyTestCase
 
     foo()
 
-    Tracker.flush()
-
-    foo()
+    @assertTrue foo._isRunning()
 
     Tracker.flush()
 
+    @assertTrue foo._isRunning()
+
     foo()
+
+    @assertTrue foo._isRunning()
+
+    Tracker.flush()
+
+    @assertTrue foo._isRunning()
+
+    foo()
+
+    @assertTrue foo._isRunning()
 
     @assertEqual run, [42]
 
