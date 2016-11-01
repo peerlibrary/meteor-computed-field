@@ -29,6 +29,10 @@ Optionally, you can pass custom equality function:
 new ComputedField(reactiveFunction, function (a, b) {return a === b});
 ```
 
+And a third (or second, if equality function is omitted) boolean argument to disable automatic
+stopping of the computed field, which happens by default when nothing registers a dependency
+on the computed field.
+
 Adding this package to your [Meteor](http://www.meteor.com/) application adds the `ComputedField` constructor into
 the global scope.
 
@@ -106,6 +110,22 @@ because you are not accessing its value inside an autorun, you can pass
 a `true` value as a third (or second, if you are not using a custom
 equality function) argument to its constructor. But be sure to cleanup
 the field once you do not need it anymore using `field.stop()`.
+
+Even with `true` passed as a third argument, the computed filed will be
+stopped automatically if it was created inside `onCreated` or `onRendered` of
+a template and template instance got destroyed. This means that even such
+computed field will get automatically stopped:
+
+```coffee
+onCreated: ->
+  @field = new ComputedField =>
+    @_computeField()
+  ,
+    true
+```
+
+But it will not get stopped if a template instance is still rendered but nobody
+registered any reactive dependencies on the computed field.
 
 ```javascript
 field.flush()
