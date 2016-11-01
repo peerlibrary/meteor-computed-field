@@ -16,6 +16,10 @@ Package.onUse(function (api) {
     'underscore'
   ]);
 
+  api.use([
+    'blaze'
+  ], {weak: true});
+
   api.export('ComputedField');
 
   api.addFiles([

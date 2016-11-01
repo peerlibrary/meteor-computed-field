@@ -1,3 +1,25 @@
+runs = []
+output = []
+
+Template.computedFieldTestTemplate.onCreated ->
+  internal = new ReactiveVar 42
+
+  @field = new ComputedField =>
+    runs.push true
+    internal.get()
+  ,
+    true
+
+  @autorun (computation) =>
+    f = new ComputedField =>
+      internal.get()
+
+    output.push f()
+
+Template.computedFieldTestTemplate.events
+  'click .computedFieldTestTemplate': (event) ->
+    Template.instance().field()
+
 class TemplateTestCase extends ClassyTestCase
   @testName: 'computed-field - template'
 
@@ -73,6 +95,38 @@ class TemplateTestCase extends ClassyTestCase
       # We can also stop autorun manually.
       @foo.stop()
       @assertFalse @foo._isRunning()
+  ]
+
+  testTemplateAutorun: [
+    ->
+      runs = []
+      output = []
+
+      @rendered = Blaze.render Template.computedFieldTestTemplate, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual $('.computedFieldTestTemplate').text(), ''
+
+      $('.computedFieldTestTemplate').click()
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      $('.computedFieldTestTemplate').click()
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertTrue @rendered.templateInstance().field._isRunning()
+
+      Blaze.remove @rendered
+
+      @assertFalse @rendered.templateInstance().field._isRunning()
+
+      @assertEqual runs.length, 1
+      @assertEqual output.length, 1
   ]
 
 ClassyTestCase.addTest new TemplateTestCase()

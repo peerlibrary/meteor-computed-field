@@ -8,11 +8,20 @@ class ComputedField
     handle = null
     lastValue = null
 
-    # This autorun does not keep the Blaze template instance context. So func should not access things like
-    # Template.instance() because it will be null.
-    # TODO: Fix this. See: https://github.com/meteor/meteor/issues/4494
+    # It is not possible to nest view's autorun inside another autorun (even view's autorun).
+    # So we can use view's autorun only for the first. This means that in a computed field
+    # nested inside a view's autorun one cannot access Template.instance().
+    # TODO: Fix this.
+    #       See: https://github.com/meteor/meteor/issues/4494
+    #       See: https://github.com/peerlibrary/meteor-computed-field/issues/5
+    if not Tracker.active and currentView = Package.blaze?.Blaze?.currentView
+      autorun = (f) ->
+        currentView.autorun f
+    else
+      autorun = Tracker.autorun
+
     startAutorun = ->
-      handle = Tracker.autorun (computation) ->
+      handle = autorun (computation) ->
         value = func()
 
         unless lastValue
