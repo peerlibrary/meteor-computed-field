@@ -23,15 +23,14 @@ This is useful when you are assigning them to objects because they behave like o
 them in [Blaze Components](https://github.com/peerlibrary/meteor-blaze-components) template by simply doing
 `{{field}}` when they are assigned to the component.
 
-Optionally, you can pass custom equality function:
+When computed field is created inside a Blaze template (in `onCreated` or `onRendered`) it will automatically detect this
+and allow use of `Template.instance()` and `Template.currentData()` inside a function.
+
+Optionally, you can pass a custom equality function:
 
 ```javascript
 new ComputedField(reactiveFunction, function (a, b) {return a === b});
 ```
-
-And a third (or second, if equality function is omitted) boolean argument to disable automatic
-stopping of the computed field, which happens by default when nothing registers a dependency
-on the computed field.
 
 Adding this package to your [Meteor](http://www.meteor.com/) application adds the `ComputedField` constructor into
 the global scope.
@@ -45,19 +44,63 @@ Installation
 meteor add peerlibrary:computed-field
 ```
 
+Arguments
+---------
+
+`ComputedField` constructor accepts the following arguments:
+
+* `reactiveFunction` – a reactive function which should return a computed field's value
+* `equalityFunction` – a function to compare the return value to see if it has changed and if the computed field
+should be invalidated; by default it is equal to `ReactiveVar._isEqual`, which means that only primitive values are compared
+by value, and all other are always different
+* `dontStop` – pass `true` to prevent computed field from automatically stopping internal autorun once the field is not used
+anymore inside any reactive context (no reactive dependency has been registered on the computed field); sometimes
+you do not want autorun to be stopped in this way because you are not using a computed field inside a reactive context at all
+
+You can pass `dontStop` as a second argument as well, skipping the `equalityFunction`.
+
 Extra field methods
 -------------------
 
 The computed field is a function, but it has also two extra methods which you probably do not really need, because
 computed field should do the right thing automatically.
 
+### `field.stop()` ###
+
+Internally, computed field creates an autorun which should not run once it is not needed anymore.
+
+If you create a computed field inside another autorun, then you do not have to worry and computed field's autorun
+will be stopped and cleaned automatically every time outside computation gets invalidated.
+
+If you create a computed field outside an autorun, autorun will be automatically stopped when there will
+be no reactive dependencies anymore on the computed field. So the previous example could be written as well as:
+
 ```javascript
-field.stop()
+var result = new ComputedField(frequentlyInvalidatedButCheap);
+Tracker.autorun(function () {
+  expensiveComputation(result());
+});
 ```
 
-Internally, computed field creates an autorun. If you create a computed field inside another autorun, then you do not
-have to worry and computed field's autorun will be stopped and cleaned automatically every time outside computation
-gets invalidated. This is useful if you want to minimize propagation of reactivity. For example:
+Moreover, if you create a computed field inside a Blaze template (in `onCreated` or `onRendered`) it will automatically
+detect this and it will use template's autorun which means that autorun will be stopped automatically when
+template instance gets destroyed.
+
+Despite all this, the `stop()` method is provided for you if you want to explicitly stop and clean the field. Remember,
+getting a value again afterwards will start internal autorun again.
+
+### `field.flush()` ###
+
+Sometimes you do not want to wait for global flush to happen to recompute the value. You can call `flush()` on the
+field to force immediate recomputation. But the same happens when you access the field value. If the value is
+invalidated, it will be automatically first recomputed and then returned. `flush()` is in this case called for you
+before returning you the field value. In both cases, calling `flush()` directly or accessing the field value,
+recomputation happens only if it is needed.
+
+Examples
+--------
+
+Computed field is useful if you want to minimize propagation of reactivity. For example:
 
 ```javascript
 Tracker.autorun(function () {
@@ -85,57 +128,33 @@ Tracker.autorun(function () {
 });
 ```
 
-Still, the `stop()` method is provided for you if you want to explicitly stop and clean the field. Remember,
-getting a value again afterwards will start internal autorun again.
+You can use computed field to attach a field to a [Blaze Component](https://github.com/peerlibrary/meteor-blaze-components):
 
-For example, if you want to manually stop computed fields in
-[Blaze Components](https://github.com/peerlibrary/meteor-blaze-components), you could create them in the `onCreated`
-hook and clean-up them inside the `onDestroyed` hook. You can use the following pattern, in CoffeeScript:
-
-```coffee
-onCreated: ->
-  @field = new ComputedField =>
-    @_computeField()
-
-onDestroyed: ->
-  for field, value of @ when value instanceof ComputedField
-    value.stop()
+```js
+class ExampleComponent extends BlazeComponent {
+  onCreated() {
+    super.onCreated();
+    this.sum = new ComputedField(() => {
+      let sum = 0;
+      collection.find({}, {fields: {value: 1}}).forEach((doc) => {
+        sum += doc.value;
+      });
+      return sum;
+    });
+  }
 }
+
+ExampleComponent.register('ExampleComponent');
 ```
 
-But you do not have to! They will be stopped automatically anyway.
+And now you can access this field inside a component without knowing that it will change DOM only when the sum
+itself changes, and not at every change of any document:
 
-If you want to prevent automatically stopping the computed field, maybe
-because you are not accessing its value inside an autorun, you can pass
-a `true` value as a third (or second, if you are not using a custom
-equality function) argument to its constructor. But be sure to cleanup
-the field once you do not need it anymore using `field.stop()`.
-
-Even with `true` passed as a third argument, the computed filed will be
-stopped automatically if it was created inside `onCreated` or `onRendered` of
-a template and template instance got destroyed. This means that even such
-computed field will get automatically stopped:
-
-```coffee
-onCreated: ->
-  @field = new ComputedField =>
-    @_computeField()
-  ,
-    true
+```handlebars
+<template name="ExampleComponent">
+  <p>{{sum}}</p>
+</template>
 ```
-
-But it will not get stopped if a template instance is still rendered but nobody
-registered any reactive dependencies on the computed field.
-
-```javascript
-field.flush()
-```
-
-Sometimes you do not want to wait for global flush to happen to recompute the value. You can call `flush()` on the
-field to force immediate recomputation. But the same happens when you access the field value. If the value is
-invalidated, it will be automatically first recomputed and then returned. `flush()` is in this case called for you
-before returning you the field value. In both cases, calling `flush()` directly or accessing the field value,
-recomputation happens only if it is needed.
 
 Related projects
 ----------------
