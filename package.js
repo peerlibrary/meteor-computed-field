@@ -17,7 +17,7 @@ Package.onUse(function (api) {
   ]);
 
   api.use([
-    'blaze'
+    'blaze@2.2.0'
   ], {weak: true});
 
   api.export('ComputedField');
@@ -36,7 +36,7 @@ Package.onTest(function (api) {
     'tracker',
     'reactive-var',
     'templating',
-    'blaze',
+    'blaze@2.2.0',
     'spacebars',
     'underscore',
     'jquery'

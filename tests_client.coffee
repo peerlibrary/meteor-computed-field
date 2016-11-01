@@ -12,7 +12,7 @@ Template.computedFieldTestTemplate.onCreated ->
 
   @autorun (computation) =>
     f = new ComputedField =>
-      internal.get()
+      Template.currentData()?.foo?() % 10
 
     output.push f()
 
@@ -127,6 +127,53 @@ class TemplateTestCase extends ClassyTestCase
 
       @assertEqual runs.length, 1
       @assertEqual output.length, 1
+  ]
+
+  testTemplateNestedAutorun: [
+    ->
+      output = []
+
+      @internal = new ReactiveVar 42
+
+      @foo = new ComputedField =>
+        @internal.get()
+
+      @rendered = Blaze.renderWithData Template.computedFieldTestTemplate, {foo: @foo}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual $('.computedFieldTestTemplate').text(), '42'
+
+      @internal.set 43
+
+      @assertEqual $('.computedFieldTestTemplate').text(), '42'
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual $('.computedFieldTestTemplate').text(), '43'
+
+      @internal.set 53
+
+      @assertEqual $('.computedFieldTestTemplate').text(), '43'
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual $('.computedFieldTestTemplate').text(), '53'
+
+      Blaze.remove @rendered
+
+      @internal.set 54
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      # We can also stop autorun manually.
+      @foo.stop()
+
+      @assertEqual output, [2, 3]
   ]
 
 ClassyTestCase.addTest new TemplateTestCase()
