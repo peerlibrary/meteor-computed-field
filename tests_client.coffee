@@ -16,6 +16,17 @@ Template.computedFieldTestTemplate.onCreated ->
 
     output.push f()
 
+Template.computedFieldTestTemplate.helpers
+  bar: ->
+    field = new ComputedField =>
+      foo = Template.currentData()?.foo?()
+      if _.isNumber foo
+        foo % 10
+      else
+        ''
+
+    field()
+
 Template.computedFieldTestTemplate.events
   'click .computedFieldTestTemplate': (event) ->
     Template.instance().field()
@@ -35,21 +46,21 @@ class TemplateTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual $('.computedFieldTestTemplate').text(), '42'
+      @assertEqual $('.computedFieldTestTemplate').text(), '42|2'
 
       @internal.set 43
       # Field flush happens automatically when using getter.
       @assertEqual @foo(), 43
 
       # There was no global flush yet, so old value is rendered.
-      @assertEqual $('.computedFieldTestTemplate').text(), '42'
+      @assertEqual $('.computedFieldTestTemplate').text(), '42|2'
 
       Tracker.afterFlush @expect()
   ,
     ->
       # But after global flush we want that the new value is rendered, even if we flushed
       # the autorun before the global flush happened (by calling a getter).
-      @assertEqual $('.computedFieldTestTemplate').text(), '43'
+      @assertEqual $('.computedFieldTestTemplate').text(), '43|3'
 
       Blaze.remove @rendered
 
@@ -82,7 +93,7 @@ class TemplateTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual $('.computedFieldTestTemplate').text(), '45'
+      @assertEqual $('.computedFieldTestTemplate').text(), '45|5'
 
       # Autorun is running again.
       @assertTrue @foo._isRunning()
@@ -107,7 +118,7 @@ class TemplateTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual $('.computedFieldTestTemplate').text(), ''
+      @assertEqual $('.computedFieldTestTemplate').text(), '|'
 
       $('.computedFieldTestTemplate').click()
 
@@ -143,25 +154,25 @@ class TemplateTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual $('.computedFieldTestTemplate').text(), '42'
+      @assertEqual $('.computedFieldTestTemplate').text(), '42|2'
 
       @internal.set 43
 
-      @assertEqual $('.computedFieldTestTemplate').text(), '42'
+      @assertEqual $('.computedFieldTestTemplate').text(), '42|2'
 
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual $('.computedFieldTestTemplate').text(), '43'
+      @assertEqual $('.computedFieldTestTemplate').text(), '43|3'
 
       @internal.set 53
 
-      @assertEqual $('.computedFieldTestTemplate').text(), '43'
+      @assertEqual $('.computedFieldTestTemplate').text(), '43|3'
 
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual $('.computedFieldTestTemplate').text(), '53'
+      @assertEqual $('.computedFieldTestTemplate').text(), '53|3'
 
       Blaze.remove @rendered
 

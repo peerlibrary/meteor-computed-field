@@ -8,9 +8,35 @@ class ComputedField
     handle = null
     lastValue = null
 
+    # TODO: Provide an option to prevent using view's autorun.
+    #       One can wrap code with Blaze._withCurrentView(null, code) to prevent using view's autorun for now.
     if currentView = Package.blaze?.Blaze?.currentView
-      autorun = (f) ->
-        currentView.autorun f
+      if currentView._isInRender
+        # Inside render we cannot use currentView.autorun directly, so we use our own version of it.
+        # This allows computed fields to be created inside Blaze template helpers, which are called
+        # the first time inside render. While currentView.autorun is disallowed inside render because
+        # autorun would be recreated for reach re-render, this is exactly what computed field does
+        # anyway so it is OK for use to use autorun in this way.
+        autorun = (f) ->
+          templateInstanceFunc = Package.blaze.Blaze.Template._currentTemplateInstanceFunc
+
+          comp = Tracker.autorun (c) ->
+            Package.blaze.Blaze._withCurrentView currentView, ->
+              Package.blaze.Blaze.Template._withTemplateInstanceFunc templateInstanceFunc, ->
+                f.call currentView, c
+
+          stopComputation = ->
+            comp.stop()
+          currentView.onViewDestroyed stopComputation
+          comp.onStop ->
+            currentView.removeViewDestroyedListener stopComputation
+
+          comp
+
+      else
+        autorun = (f) ->
+          currentView.autorun f
+
     else
       autorun = Tracker.autorun
 
