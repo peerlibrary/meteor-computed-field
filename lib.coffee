@@ -106,8 +106,7 @@ class ComputedField
     getter.flush = ->
       Tracker.nonreactive ->
         if handle
-          # TODO: Use something more official. See https://github.com/meteor/meteor/issues/4514
-          handle._recompute()
+          handle.flush()
         else
           # If there is no autorun, create it now. This will do initial recomputation as well. If there
           # will be no dependents after the global flush, autorun will stop (again).
