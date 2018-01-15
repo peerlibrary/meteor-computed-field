@@ -1,4 +1,4 @@
-class ComputedField
+export class ComputedField
   constructor: (func, equalsFunc, dontStop) ->
     # To support passing boolean as the second argument.
     if _.isBoolean equalsFunc
