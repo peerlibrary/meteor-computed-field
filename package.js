@@ -10,7 +10,7 @@ Package.onUse(function (api) {
 
   // Core dependencies.
   api.use([
-    'coffeescript@1.0.17',
+    'coffeescript@1.2.4',
     'tracker',
     'reactive-var',
     'underscore'
